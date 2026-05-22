@@ -14,48 +14,48 @@ class BertConfig:
     pad_id: int = 0  # Padding token 的 id / Token id used for padding positions.
     mask_id: int = 103  # [MASK] token 的 id / Token id used to replace masked tokens in MLM.
 
-    # Q: BERT 是 encoder-only 吗？/ Is BERT encoder-only?
-    # A: 是的。BERT 只使用 Transformer 的 Encoder 部分，没有 Decoder。
+    # Q1: BERT 是 encoder-only 吗？/ Is BERT encoder-only?
+    # A1: 是的。BERT 只使用 Transformer 的 Encoder 部分，没有 Decoder。
     #    Yes. BERT only uses Transformer encoder blocks and does not have a decoder.
 
-    # Q: MLM 是句子分类吗？/ Is MLM sentence classification?
-    # A: 不是。MLM 是 masked language modeling，目标是预测被遮住的 token；
+    # Q2: MLM 是句子分类吗？/ Is MLM sentence classification?
+    # A2: 不是。MLM 是 masked language modeling，目标是预测被遮住的 token；
     #    句子分类是另一个任务，通常使用 [CLS] 向量预测整个句子的类别。
     #    No. MLM predicts masked tokens, while sentence classification predicts
     #    one label for the whole sentence, usually from the [CLS] vector.
 
-    # Q: 既然 BERT 是 encoder-only，为什么还需要 mask？/ Why does encoder-only BERT still need masks?
-    # A: Encoder-only 只是模型结构，MLM 是训练目标。BERT 的 self-attention 是双向的；
+    # Q3: 既然 BERT 是 encoder-only，为什么还需要 mask？/ Why does encoder-only BERT still need masks?
+    # A3: Encoder-only 只是模型结构，MLM 是训练目标。BERT 的 self-attention 是双向的；
     #    如果不遮住目标 token，模型会直接看到答案，所以需要用 [MASK] 隐藏原 token。
     #    Encoder-only describes the architecture, while MLM describes the training
     #    objective. Because BERT uses bidirectional self-attention, the target
     #    token must be hidden to avoid leaking the answer.
 
-    # Q: 为什么 MLM 需要 mask_id？/ Why does MLM need mask_id?
-    # A: mask_id 是 [MASK] token 的编号。MLM 需要一个明确的占位符告诉模型：
+    # Q4: 为什么 MLM 需要 mask_id？/ Why does MLM need mask_id?
+    # A4: mask_id 是 [MASK] token 的编号。MLM 需要一个明确的占位符告诉模型：
     #    这个位置原来的 token 被遮住了，请根据左右上下文预测它。
     #    mask_id is the id of the [MASK] token. MLM needs this explicit placeholder
     #    to mark a hidden token position that should be predicted from context.
 
-    # Q: 为什么不能直接删除被 mask 的 token？/ Why not delete the masked token?
-    # A: 删除 token 会改变句子长度和位置，模型也不知道原来这里有一个词需要预测；
+    # Q5: 为什么不能直接删除被 mask 的 token？/ Why not delete the masked token?
+    # A5: 删除 token 会改变句子长度和位置，模型也不知道原来这里有一个词需要预测；
     #    [MASK] 的作用是保留位置，但隐藏答案。
     #    Deleting the token changes sequence length and positions. [MASK] keeps
     #    the position while hiding the answer.
 
-    # Q: 为什么不能保留原 token 让模型预测？/ Why not keep the original token?
-    # A: 因为 BERT 是双向 attention，模型会直接看到原 token，相当于泄露答案。
+    # Q6: 为什么不能保留原 token 让模型预测？/ Why not keep the original token?
+    # A6: 因为 BERT 是双向 attention，模型会直接看到原 token，相当于泄露答案。
     #    Since BERT attends bidirectionally, keeping the original token would
     #    reveal the answer to the model.
 
-    # Q: pad_id 是什么？/ What is pad_id?
-    # A: pad_id 是 padding token 的编号。batch 中句子长度不同时，用 padding 补齐到相同长度；
+    # Q7: pad_id 是什么？/ What is pad_id?
+    # A7: pad_id 是 padding token 的编号。batch 中句子长度不同时，用 padding 补齐到相同长度；
     #    attention mask 会让模型忽略这些不是真实文本的 fake positions。
     #    pad_id marks padding positions. They are added only to make sequences in
     #    a batch the same length, and attention masks tell the model to ignore them.
 
-    # Q: dropout 是什么，它为什么能降低过拟合？/ What is dropout, and why can it reduce overfitting?
-    # A: dropout 是训练时随机丢弃一部分激活值的概率。数学上，如果某层激活是 h，
+    # Q8: dropout 是什么，它为什么能降低过拟合？/ What is dropout, and why can it reduce overfitting?
+    # A8: dropout 是训练时随机丢弃一部分激活值的概率。数学上，如果某层激活是 h，
     #    dropout 会采样一个 Bernoulli mask: m_i ~ Bernoulli(1 - p)，然后使用
     #    h'_i = h_i * m_i / (1 - p)，其中 p 是 dropout 概率。除以 (1 - p) 是为了
     #    让训练时的期望保持不变：E[h'_i] = h_i。

@@ -13,8 +13,8 @@ class T5Config:
     dropout: float = 0.1  # Dropout 概率 / Dropout probability for regularization.
     pad_id: int = 0  # Padding token 的 id / Token id used for padding positions.
 
-    # Q: T5 是什么模型？/ What kind of model is T5?
-    # A: T5 是 Text-to-Text Transfer Transformer 的缩写，是 Google 提出的一个
+    # Q1: T5 是什么模型？/ What kind of model is T5?
+    # A1: T5 是 Text-to-Text Transfer Transformer 的缩写，是 Google 提出的一个
     #    encoder-decoder Transformer 模型。
     #    T5 stands for Text-to-Text Transfer Transformer. It is an
     #    encoder-decoder Transformer model proposed by Google.

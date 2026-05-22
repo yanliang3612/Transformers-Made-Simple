@@ -12,8 +12,8 @@ class GPTConfig:
     dropout: float = 0.1  # Dropout 概率 / Dropout probability for regularization.
     pad_id: int = 0  # Padding token 的 id / Token id used for padding positions.
 
-    # Q: 为什么 vocab_size 可以是 32000？GPT 这么强，只预测 32000 个 token 真的够吗？
-    # A: 是的，因为 GPT 预测的是 token，不一定是完整的词。tokenizer 会把文本拆成有限数量的
+    # Q1: 为什么 vocab_size 可以是 32000？GPT 这么强，只预测 32000 个 token 真的够吗？
+    # A1: 是的，因为 GPT 预测的是 token，不一定是完整的词。tokenizer 会把文本拆成有限数量的
     #    基础片段，比如常见词、子词、字符、符号等。一个复杂词或新词可以由多个 token 组合出来。
     #    这类似于英文字母只有 26 个，但可以组合出非常多单词。
     #    Yes. GPT predicts tokens, not necessarily whole words. A tokenizer splits
@@ -21,8 +21,8 @@ class GPTConfig:
     #    characters, and symbols. Rare or new words can be represented as multiple
     #    tokens, similar to how 26 English letters can form many words.
     #
-    # Q: 那 32000 个 token 可以表达任何词汇吗？/ Can 32,000 tokens express any word?
-    # A: 更准确地说，只要 tokenizer 有兜底拆分机制，就几乎可以表示任意文本；
+    # Q2: 那 32000 个 token 可以表达任何词汇吗？/ Can 32,000 tokens express any word?
+    # A2: 更准确地说，只要 tokenizer 有兜底拆分机制，就几乎可以表示任意文本；
     #    但生僻词、代码、网址等可能会被拆得更碎，序列更长，效率更低。
     #    More precisely, if the tokenizer has a fallback splitting strategy, it can
     #    represent almost any text. However, rare words, code, or URLs may be split

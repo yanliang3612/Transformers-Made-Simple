@@ -13,9 +13,9 @@ class MoEConfig:
     num_classes: int = 2  # 分类类别数 / Number of output classes for classification.
     dropout: float = 0.1  # Dropout 概率 / Dropout probability for regularization.
 
-    # Q: MoE Transformer block 的层数和传统 Transformer block 的层数有什么区别？
+    # Q1: MoE Transformer block 的层数和传统 Transformer block 的层数有什么区别？
     #    What is the difference between MoE Transformer layers and standard Transformer layers?
-    # A: num_layers 都表示 Transformer block 堆叠的层数。传统 Transformer block 每层通常包含
+    # A1: num_layers 都表示 Transformer block 堆叠的层数。传统 Transformer block 每层通常包含
     #    LayerNorm、self-attention、residual connection、LayerNorm、普通 FeedForward/MLP、
     #    residual connection。MoE Transformer block 的 self-attention 部分基本一样，
     #    但把普通 FeedForward/MLP 替换成 Router/Gate + 多个 Expert FeedForward。
@@ -26,32 +26,32 @@ class MoEConfig:
     #    part mostly the same, but replaces the regular FeedForward/MLP with a
     #    Router/Gate plus multiple Expert FeedForward networks.
 
-    # Q: 传统 Transformer block 每层包含哪些？/ What does each standard Transformer block contain?
-    # A: 通常是：输入 x -> LayerNorm -> Self-Attention -> Dropout -> Residual Add
+    # Q2: 传统 Transformer block 每层包含哪些？/ What does each standard Transformer block contain?
+    # A2: 通常是：输入 x -> LayerNorm -> Self-Attention -> Dropout -> Residual Add
     #    -> LayerNorm -> FeedForward/MLP -> Dropout -> Residual Add -> 输出 x。
     #    Usually: input x -> LayerNorm -> Self-Attention -> Dropout -> Residual Add
     #    -> LayerNorm -> FeedForward/MLP -> Dropout -> Residual Add -> output x.
 
-    # Q: MoE Transformer block 每层包含哪些？/ What does each MoE Transformer block contain?
-    # A: 通常是：输入 x -> LayerNorm -> Self-Attention -> Dropout -> Residual Add
+    # Q3: MoE Transformer block 每层包含哪些？/ What does each MoE Transformer block contain?
+    # A3: 通常是：输入 x -> LayerNorm -> Self-Attention -> Dropout -> Residual Add
     #    -> LayerNorm -> Router/Gate -> 选择 Expert -> MoE FeedForward -> Dropout
     #    -> Residual Add -> 输出 x。
     #    Usually: input x -> LayerNorm -> Self-Attention -> Dropout -> Residual Add
     #    -> LayerNorm -> Router/Gate -> choose Expert -> MoE FeedForward -> Dropout
     #    -> Residual Add -> output x.
 
-    # Q: 最核心的区别是什么？/ What is the key difference?
-    # A: 传统 Transformer 里所有 token 都经过同一个 FeedForward；MoE Transformer 里，
+    # Q4: 最核心的区别是什么？/ What is the key difference?
+    # A4: 传统 Transformer 里所有 token 都经过同一个 FeedForward；MoE Transformer 里，
     #    router 会为不同 token 选择不同 expert。也就是：普通 FFN 被替换成
     #    Router + 多个 Expert FFN。
     #    In a standard Transformer, all tokens go through the same FeedForward.
     #    In an MoE Transformer, the router can send different tokens to different
     #    experts. In short, the regular FFN is replaced by Router + multiple Expert FFNs.
 
-    # Q: router_logits = self.gate(x); expert_ids = router_logits.argmax(dim=-1)
+    # Q5: router_logits = self.gate(x); expert_ids = router_logits.argmax(dim=-1)
     #    这里的 self.gate(x) 一般是什么函数？
     #    What kind of function is self.gate(x) usually?
-    # A: 在这个项目里，self.gate(x) 是一个线性层，也就是 nn.Linear(dim, num_experts)。
+    # A5: 在这个项目里，self.gate(x) 是一个线性层，也就是 nn.Linear(dim, num_experts)。
     #    In this project, self.gate(x) is a linear layer, nn.Linear(dim, num_experts).
     #
     #    所以 router_logits = self.gate(x) 本质上是在做：
