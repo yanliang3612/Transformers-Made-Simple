@@ -3,15 +3,15 @@ from dataclasses import dataclass
 
 @dataclass
 class ViTConfig:
-    image_size: int = 32
-    patch_size: int = 4
-    in_channels: int = 3
-    num_classes: int = 10
-    dim: int = 256
-    num_layers: int = 4
-    num_heads: int = 4
-    mlp_dim: int = 1024
-    dropout: float = 0.1
+    image_size: int = 32  # 图片高宽 / Image height and width.
+    patch_size: int = 4  # Patch 边长 / Side length of each image patch.
+    in_channels: int = 3  # 输入图片通道数 / Number of input image channels.
+    num_classes: int = 10  # 图像分类类别数 / Number of output classes for image classification.
+    dim: int = 256  # Transformer 隐藏层维度 / Transformer hidden feature dimension.
+    num_layers: int = 4  # Encoder-style Transformer 层数 / Number of encoder-style Transformer blocks.
+    num_heads: int = 4  # 注意力头数 / Number of self-attention heads.
+    mlp_dim: int = 1024  # 前馈网络中间层维度 / Feed-forward network inner dimension.
+    dropout: float = 0.1  # Dropout 概率 / Dropout probability for regularization.
 
     # Q1: Vision Transformer 是 decoder-only 吗，还是哪种模型？
     #    Is Vision Transformer decoder-only, or what kind of model is it?
