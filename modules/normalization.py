@@ -56,11 +56,33 @@ class RMSNorm(nn.Module):
 
 
 def build_norm(dim: int, norm_type: str = "layernorm") -> nn.Module:
-    """Small factory so model files can switch normalization style easily."""
+    """
+    中文说明：
+    这是一个归一化层的工厂函数。模型配置文件只需要传入 norm_type 字符串，
+    就可以选择使用 LayerNorm 或 RMSNorm,而不必在模型代码里写死具体实现。
+    默认返回 LayerNorm, 这也是大多数 Transformer 模型的标准选择；如果传入
+    "rmsnorm"，则返回本文件定义的 RMSNorm 模块。
 
+    English explanation:
+    This is a factory function for normalization layers. Model config files only
+    need to pass a norm_type string to choose between LayerNorm and RMSNorm,
+    without hard-coding a specific implementation in the model code. It returns
+    LayerNorm by default, which is the standard choice in most Transformer
+    models; if "rmsnorm" is passed, it returns the RMSNorm module defined in
+    this file.
+    """
+
+    # 中文：如果 norm_type 是 "layernorm"，返回 PyTorch 内置的 LayerNorm。
+    # English: If norm_type is "layernorm", return PyTorch's built-in LayerNorm.
     if norm_type == "layernorm":
         return nn.LayerNorm(dim)
+
+    # 中文：如果 norm_type 是 "rmsnorm"，返回本文件定义的 RMSNorm。
+    # English: If norm_type is "rmsnorm", return the RMSNorm defined in this file.
     if norm_type == "rmsnorm":
         return RMSNorm(dim)
+
+    # 中文：如果传入了不支持的 norm_type，抛出错误提示。
+    # English: Raise an error if an unsupported norm_type is provided.
     raise ValueError(f"Unknown norm_type: {norm_type}")
 
