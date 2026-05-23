@@ -136,7 +136,8 @@ class LearnedPositionalEncoding(nn.Module):
         # 中文：生成位置编号 [0, 1, ..., seq_len - 1]，
         # 并扩展成 [batch, seq_len]，让 batch 中每个样本使用相同的位置编号。
         # English: Create position indices [0, 1, ..., seq_len - 1],
-        # and expand them to [batch, seq_len] so each sample in the batch uses the same positions.
+        # and expand them to [batch, seq_len] so each sample in the batch
+        # uses the same positions.
         positions = torch.arange(seq_len, device=x.device).expand(batch, seq_len)
 
         # 中文：通过 self.position(positions) 查表得到位置向量，
@@ -150,29 +151,117 @@ def apply_rotary_embedding(
     q: torch.Tensor,
     k: torch.Tensor,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """Minimal RoPE implementation for educational decoder models.
+    """
+    中文说明：
+    这个函数实现了 RoPE (Rotary Positional Embedding,旋转位置编码)。
+    RoPE 不像传统位置编码那样把位置向量直接加到 token embedding 上，
+    而是根据 token 的位置对 attention 中的 query 和 key 向量进行二维旋转。
+    具体来说，它会把 q 和 k 的 head_dim 维度两两配对，例如 (0,1)、
+    (2,3)、(4,5)，然后对每一对维度按照位置 p 和频率 theta_i 生成的角度
+    p * theta_i 进行旋转。这样在后续 attention 计算 q 和 k 的点积时，
+    score 中会自然包含相对位置信息 t - p, 从而让模型感知 token 之间的
+    相对距离。
 
-    Args:
-        q, k: tensors with shape (batch, heads, seq_len, head_dim)
+    English explanation:
+    This function implements RoPE, short for Rotary Positional Embedding.
+    Unlike traditional positional encoding methods that add position vectors
+    directly to token embeddings, RoPE injects positional information by
+    rotating the query and key vectors in attention. Specifically, it pairs
+    the head_dim dimensions of q and k, such as (0,1), (2,3), and (4,5), and
+    applies a 2D rotation to each pair using an angle p * theta_i determined
+    by the token position p and the frequency theta_i. After this rotation,
+    the dot product between q and k naturally contains relative positional
+    information t - p, allowing the model to capture relative distances
+    between tokens.
     """
 
+    # 中文：获取 attention head 的维度，也就是 q 和 k 最后一维的大小。
+    # English: Get the attention head dimension, which is the size of the
+    # last dimension of q and k.
     head_dim = q.size(-1)
+
+    # 中文：RoPE 需要把维度两两配对做二维旋转，所以 head_dim 必须是偶数。
+    # English: RoPE pairs dimensions for 2D rotation, so head_dim must be even.
     if head_dim % 2 != 0:
+
+        # 中文：如果 head_dim 不是偶数，就报错。
+        # English: Raise an error if head_dim is not even.
         raise ValueError("RoPE requires an even head_dim")
 
+    # 中文：获取 q 所在的设备，例如 CPU 或 GPU，
+    # 确保后面创建的张量在同一个设备上。
+    # English: Get the device of q, such as CPU or GPU, so newly created
+    # tensors are on the same device.
     device = q.device
+
+    # 中文：获取序列长度；q 的形状是 (batch, heads, seq_len, head_dim)，
+    # 所以倒数第二维是 seq_len。
+    # English: Get the sequence length. Since q has shape
+    # (batch, heads, seq_len, head_dim), the second-to-last dimension is seq_len.
     seq_len = q.size(-2)
+
+    # 中文：计算每一对维度对应的频率 theta_i = 1 / 10000^(2i / head_dim)。
+    # English: Compute the frequency for each dimension pair:
+    # theta_i = 1 / 10000^(2i / head_dim).
     theta = 1.0 / (10000 ** (torch.arange(0, head_dim, 2, device=device).float() / head_dim))
+
+    # 中文：生成位置编号 [0, 1, 2, ..., seq_len - 1]。
+    # English: Create position indices [0, 1, 2, ..., seq_len - 1].
     positions = torch.arange(seq_len, device=device).float()
+
+    # 中文：计算每个位置 p 和每个频率 theta_i 的乘积，
+    # 得到旋转角度 p * theta_i。
+    # English: Compute the product of each position p and each frequency theta_i,
+    # giving the rotation angle p * theta_i.
     freqs = torch.einsum("i,j->ij", positions, theta)
+
+    # 中文：对旋转角度取 sin，并扩展成形状 (1, 1, seq_len, head_dim / 2)，
+    # 方便和 q、k 广播相乘。
+    # English: Apply sin to the rotation angles and reshape to
+    # (1, 1, seq_len, head_dim / 2) for broadcasting with q and k.
     sin = freqs.sin()[None, None, :, :]
+
+    # 中文：对旋转角度取 cos，并扩展成形状 (1, 1, seq_len, head_dim / 2)，
+    # 方便和 q、k 广播相乘。
+    # English: Apply cos to the rotation angles and reshape to
+    # (1, 1, seq_len, head_dim / 2) for broadcasting with q and k.
     cos = freqs.cos()[None, None, :, :]
 
+    # 中文：定义内部函数 rotate，用来对输入张量 x 的每两个维度做 RoPE 旋转。
+    # English: Define an inner function rotate to apply RoPE rotation to every
+    # pair of dimensions in x.
     def rotate(x: torch.Tensor) -> torch.Tensor:
+
+        # 中文：取出偶数维度，例如 x_0, x_2, x_4, ...，
+        # 作为每个二维向量的第一个分量。
+        # English: Select even dimensions, such as x_0, x_2, x_4, ...,
+        # as the first component of each 2D vector.
         x1 = x[..., 0::2]
+
+        # 中文：取出奇数维度，例如 x_1, x_3, x_5, ...，
+        # 作为每个二维向量的第二个分量。
+        # English: Select odd dimensions, such as x_1, x_3, x_5, ...,
+        # as the second component of each 2D vector.
         x2 = x[..., 1::2]
+
+        # 中文：对每一对维度做二维旋转：
+        # x'_1 = x1 * cos - x2 * sin,
+        # x'_2 = x1 * sin + x2 * cos。
+        # torch.stack(..., dim=-1) 会把旋转后的两个分量重新放到一起。
+        # English: Apply 2D rotation to each dimension pair:
+        # x'_1 = x1 * cos - x2 * sin,
+        # x'_2 = x1 * sin + x2 * cos.
+        # torch.stack(..., dim=-1) groups the two rotated components back together.
         rotated = torch.stack((x1 * cos - x2 * sin, x1 * sin + x2 * cos), dim=-1)
+
+        # 中文：把最后两个维度合并，把形状从 (..., head_dim / 2, 2)
+        # 还原成 (..., head_dim)。
+        # English: Flatten the last two dimensions, converting the shape from
+        # (..., head_dim / 2, 2) back to (..., head_dim).
         return rotated.flatten(-2)
 
+    # 中文：分别对 q 和 k 应用 RoPE 旋转，并返回旋转后的位置编码版本。
+    # English: Apply RoPE rotation to q and k separately, and return their
+    # position-encoded versions.
     return rotate(q), rotate(k)
 
