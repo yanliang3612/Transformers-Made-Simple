@@ -1,4 +1,6 @@
-# Transformers Made Simple
+<div align="center">
+  <img src="figure/transformers_made_simple_logo.png" width="520" alt="Transformers Made Simple" />
+</div>
 
 A beginner-friendly PyTorch repository for learning the major Transformer families. The goal is not to reproduce an industrial training stack, but to make each architecture small, readable, runnable, and easy to modify.
 

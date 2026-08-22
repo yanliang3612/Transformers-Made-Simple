@@ -1,4 +1,6 @@
-# Transformers Made Simple
+<div align="center">
+  <img src="figure/transformers_made_simple_logo.png" width="520" alt="Transformers Made Simple" />
+</div>
 
 这是一个面向入门学习的 Transformer 仓库。目标不是复刻工业级大模型训练框架，而是把常见 Transformer 家族拆成清楚、可运行、方便改动的小模块。
 
@@ -146,4 +148,3 @@ patches:   (batch, num_patches, dim)
 - 给 MoE 增加 load balancing loss。
 - 给 decoder-only 模型加 KV cache，提高生成速度。
 - 给 DiT 加完整 diffusion scheduler。
-
